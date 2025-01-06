@@ -131,6 +131,32 @@ def start_scraper():
     return jsonify(response), 200
 
 
+@app.route('/add-tracked-product', methods=['POST'])
+def add_tracked_product():
+    name = request.json.get('name')
+    tracked_product = TrackedProducts(name=name)
+    db.session.add(tracked_product)
+    db.session.commit()
+
+    response = {'message': 'Tracked product added successfully',
+                'id': tracked_product.id}
+    return jsonify(response), 200
+
+
+@app.route('/tracked-product/<int:product_id>', methods=['PUT'])
+def toggle_tracked_product(product_id):
+    tracked_product = TrackedProducts.query.get(product_id)
+    if tracked_product is None:
+        response = {'message': 'Tracked product not found'}
+        return jsonify(response), 404
+
+    tracked_product.tracked = not tracked_product.tracked
+    db.session.commit()
+
+    response = {'message': 'Tracked product toggled successfully'}
+    return jsonify(response), 200
+
+
 
 
 if __name__ == '__main__':
