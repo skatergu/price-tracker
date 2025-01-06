@@ -157,6 +157,40 @@ def toggle_tracked_product(product_id):
     return jsonify(response), 200
 
 
+@app.route('/tracked-products', methods=['GET'])
+def get_tracked_products():
+    tracked_products = TrackedProducts.query.all()
+
+    results = []
+    for product in tracked_products:
+        results.append({
+            'id': product.id,
+            'name': product.name,
+            'created_at': product.created_at,
+            'tracked': product.tracked
+        })
+
+    return jsonify(results), 200
+
+
+@app.route("/update-tracked-products", methods=["POST"])
+def update_tracked_products():
+    tracked_products = TrackedProducts.query.all()
+    url = "https://amazon.ca"
+
+    product_names = []
+    for tracked_product in tracked_products:
+        name = tracked_product.name
+        if not tracked_product.tracked:
+            continue
+
+        command = f"python ./scraper/__init__.py {url} \"{name}\" /results"
+        subprocess.Popen(command, shell=True)
+        product_names.append(name)
+
+    response = {'message': 'Scrapers started successfully',
+                "products": product_names}
+    return jsonify(response), 200
 
 
 if __name__ == '__main__':
